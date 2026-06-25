@@ -48,7 +48,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Correr tests con cobertura
         env:
-          DATABASE_URL: sqlite:///:memory:
+          DATABASE_URL: "sqlite:///:memory:"
         run: |
           python -m pytest tests/ \
             --cov=. \
@@ -101,7 +101,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Simular el Mundial con BD en memoria → generar dist/
         env:
-          DATABASE_URL: sqlite:///:memory:
+          DATABASE_URL: "sqlite:///:memory:"
         run: python seed_and_simulate.py
       - name: Validar que dist/index.html existe
         run: |
