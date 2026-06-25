@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CDA Simulador Mundial 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --cda-primary: #0056a7;
+      --cda-primary-dark: #003d7a;
+      --cda-secondary: #0096d6;
+      --cda-accent: #00a8e0;
+      --cda-dark: #002b54;
+      --cda-white: #ffffff;
+      --cda-light-bg: #f0f4f8;
+      --cda-card-bg: #ffffff;
+      --cda-text: #1a2332;
+      --cda-text-light: #5e6f8d;
+      --cda-border: #d0d8e3;
+      --cda-border-light: #e8ecf2;
+      --cda-success: #16a34a;
+      --cda-danger: #dc2626;
+      --cda-shadow-sm: 0 1px 3px rgba(0, 30, 60, 0.08);
+      --cda-shadow: 0 4px 16px rgba(0, 30, 60, 0.1);
+      --cda-shadow-lg: 0 8px 32px rgba(0, 30, 60, 0.12);
+      --cda-radius-sm: 4px;
+      --cda-radius: 8px;
+      --cda-radius-lg: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--cda-light-bg);
+      color: var(--cda-text);
+      font-family: "Inter", "Poppins", system-ui, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--cda-light-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--cda-secondary); border-radius: 4px; }
+
+    .top-bar {
+      background: var(--cda-white);
+      border-bottom: 1px solid var(--cda-border-light);
+      padding: 0.5rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-bar .navbar-brand {
+      font-family: "Poppins", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--cda-text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .top-bar .navbar-brand .cda-logo {
+      height: 36px;
+      width: auto;
+    }
+    .top-bar .navbar-brand .brand-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--cda-border);
+    }
+    .top-bar .navbar-brand .brand-sub {
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: var(--cda-text-light);
+      letter-spacing: 0.3px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--cda-primary) 0%, var(--cda-dark) 100%);
+      padding: 3.5rem 0 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(0,150,214,0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(0,168,224,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-family: "Poppins", sans-serif;
+      font-weight: 700;
+      font-size: 2.4rem;
+      letter-spacing: 0.5px;
+      margin: 0;
+      color: var(--cda-white);
+      position: relative;
+    }
+    .hero h1 .highlight {
+      color: var(--cda-accent);
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.8);
+      margin: 0.5rem 0 0;
+      font-weight: 400;
+      position: relative;
+    }
+
+    .btn-cda {
+      background: var(--cda-primary);
+      color: var(--cda-white);
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.7rem 2.2rem;
+      border: none;
+      border-radius: var(--cda-radius);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      box-shadow: var(--cda-shadow-sm);
+    }
+    .btn-cda:hover {
+      background: var(--cda-primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--cda-shadow);
+      color: var(--cda-white);
+    }
+    .btn-cda:disabled {
+      opacity: 0.45;
+      transform: none;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .section-title {
+      font-family: "Poppins", sans-serif;
+      font-weight: 600;
+      font-size: 1.3rem;
+      color: var(--cda-text);
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+    .section-title::after {
+      content: "";
+      display: block;
+      width: 50px;
+      height: 3px;
+      background: var(--cda-primary);
+      margin: 0.5rem auto 0;
+      border-radius: 2px;
+    }
+
+    .group-card {
+      background: var(--cda-card-bg);
+      border: 1px solid var(--cda-border-light);
+      border-radius: var(--cda-radius);
+      overflow: hidden;
+      transition: all 0.2s ease;
+      box-shadow: var(--cda-shadow-sm);
+    }
+    .group-card:hover {
+      border-color: var(--cda-border);
+      box-shadow: var(--cda-shadow);
+      transform: translateY(-2px);
+    }
+    .group-header {
+      background: var(--cda-primary);
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      color: var(--cda-white);
+      text-transform: uppercase;
+    }
+    .group-table {
+      margin: 0;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .group-table th {
+      border: none;
+      color: var(--cda-text-light);
+      font-weight: 600;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid var(--cda-border-light);
+      background: var(--cda-light-bg);
+    }
+    .group-table td {
+      border: none;
+      color: var(--cda-text);
+      padding: 0.45rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border-bottom: 1px solid var(--cda-border-light);
+      vertical-align: middle;
+    }
+    .group-table tr:last-child td { border-bottom: none; }
+    .group-table .qualified { color: var(--cda-text); }
+    .group-table .eliminated { opacity: 0.35; }
+    .group-table .team-name { font-weight: 600; }
+    .position-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+    .pos-1 { background: var(--cda-primary); color: var(--cda-white); }
+    .pos-2 { background: var(--cda-secondary); color: var(--cda-white); }
+    .pos-3, .pos-4 { background: var(--cda-border-light); color: var(--cda-text-light); }
+
+    .knockout-section { margin-top: 1.5rem; }
+    .round-header {
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 0.5rem 0;
+      margin-bottom: 0.75rem;
+      border-radius: var(--cda-radius-sm);
+      color: var(--cda-white);
+    }
+    .round-of-16 .round-header { background: var(--cda-primary); }
+    .quarterfinals .round-header { background: var(--cda-secondary); }
+    .semifinals .round-header { background: #1a7a4a; }
+    .final-round .round-header { background: var(--cda-dark); font-size: 0.9rem; }
+    .third-place .round-header { background: var(--cda-text-light); }
+
+    .match-card {
+      background: var(--cda-card-bg);
+      border: 1px solid var(--cda-border-light);
+      border-radius: var(--cda-radius);
+      padding: 0.55rem 0.85rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.15s ease;
+      box-shadow: var(--cda-shadow-sm);
+    }
+    .match-card:hover {
+      border-color: var(--cda-border);
+      box-shadow: var(--cda-shadow);
+    }
+    .match-teams { flex: 1; }
+    .match-teams .team {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.15rem 0;
+      font-size: 0.8rem;
+      gap: 0.5rem;
+    }
+    .match-teams .team .team-label {
+      font-weight: 500;
+      color: var(--cda-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .match-teams .team.winner .team-label {
+      font-weight: 700;
+      color: var(--cda-primary);
+    }
+    .match-teams .team.winner .team-label::after {
+      content: " ✓";
+      color: var(--cda-success);
+      font-size: 0.65rem;
+    }
+    .match-score {
+      font-family: "Poppins", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      min-width: 34px;
+      text-align: center;
+      color: var(--cda-text);
+      font-variant-numeric: tabular-nums;
+      background: var(--cda-light-bg);
+      padding: 0.1rem 0.3rem;
+      border-radius: var(--cda-radius-sm);
+    }
+    .match-teams .team.winner .match-score {
+      background: rgba(0,86,167,0.1);
+      color: var(--cda-primary);
+    }
+
+    .champion-banner {
+      background: linear-gradient(135deg, var(--cda-primary) 0%, var(--cda-dark) 100%);
+      border-radius: var(--cda-radius-lg);
+      padding: 2rem;
+      text-align: center;
+      margin: 2rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .champion-banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(0,168,224,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .champion-banner .trophy-icon {
+      font-size: 2.8rem;
+      display: block;
+      margin-bottom: 0.4rem;
+      position: relative;
+    }
+    .champion-banner .champion-name {
+      font-family: "Poppins", sans-serif;
+      font-weight: 700;
+      font-size: 2rem;
+      color: var(--cda-white);
+      letter-spacing: 0.5px;
+      position: relative;
+    }
+    .champion-banner .champion-sub {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: 0.2rem;
+      position: relative;
+    }
+
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,43,84,0.85);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      backdrop-filter: blur(6px);
+    }
+    .spinner-overlay.active { display: flex; }
+    .spinner-cda {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-left-color: var(--cda-accent);
+      border-right-color: var(--cda-secondary);
+      border-radius: 50%;
+      animation: cda-spin 0.8s linear infinite;
+    }
+    @keyframes cda-spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner-text {
+      color: var(--cda-white);
+      font-size: 1rem;
+      margin-top: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .spinner-dots::after {
+      content: "";
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    @keyframes dots {
+      0% { content: ""; }
+      25% { content: "."; }
+      50% { content: ".."; }
+      75% { content: "..."; }
+    }
+
+    .third-place { opacity: 0.65; }
+
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      margin: 1.25rem 0;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-item .stat-value {
+      font-family: "Poppins", sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--cda-primary);
+      line-height: 1;
+    }
+    .stat-item .stat-label {
+      font-size: 0.7rem;
+      color: var(--cda-text-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.2rem;
+    }
+
+    hr.divider {
+      border: none;
+      height: 1px;
+      background: var(--cda-border-light);
+      margin: 2rem 0;
+    }
+
+    .footer-cda {
+      background: var(--cda-dark);
+      padding: 1.5rem 0;
+      margin-top: 3rem;
+      text-align: center;
+    }
+    .footer-cda .footer-logo {
+      height: 28px;
+      width: auto;
+      opacity: 0.9;
+    }
+    .footer-cda .footer-text {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+      letter-spacing: 0.3px;
+    }
+
+    .empty-state {
+      background: var(--cda-card-bg);
+      border: 2px dashed var(--cda-border);
+      border-radius: var(--cda-radius);
+      padding: 2.5rem;
+      text-align: center;
+      color: var(--cda-text-light);
+    }
+    .empty-state p { margin: 0; font-size: 0.95rem; }
+
+    .content-card {
+      background: var(--cda-card-bg);
+      border: 1px solid var(--cda-border-light);
+      border-radius: var(--cda-radius);
+      padding: 1.5rem;
+      box-shadow: var(--cda-shadow-sm);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .kpi-card {
+      background: var(--cda-card-bg);
+      border: 1px solid var(--cda-border-light);
+      border-radius: var(--cda-radius);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      box-shadow: var(--cda-shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .kpi-card:hover {
+      border-color: var(--cda-border);
+      box-shadow: var(--cda-shadow);
+      transform: translateY(-2px);
+    }
+    .kpi-card .kpi-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.35rem;
+    }
+    .kpi-card .kpi-value {
+      font-family: "Poppins", sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--cda-primary);
+      line-height: 1.2;
+    }
+    .kpi-card .kpi-label {
+      font-size: 0.7rem;
+      color: var(--cda-text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 0.15rem;
+    }
+    .kpi-card .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--cda-text-light);
+      margin-top: 0.1rem;
+    }
+    .kpi-card.accent-blue { border-top: 3px solid var(--cda-primary); }
+    .kpi-card.accent-gold { border-top: 3px solid #d4a017; }
+    .kpi-card.accent-green { border-top: 3px solid var(--cda-success); }
+    .kpi-card.accent-secondary { border-top: 3px solid var(--cda-secondary); }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.6rem; }
+      .hero { padding: 2.5rem 0 2rem; }
+      .btn-cda { width: 100%; justify-content: center; }
+      .stats-bar { gap: 1.25rem; }
+      .champion-banner .champion-name { font-size: 1.4rem; }
+      .top-bar .navbar-brand .brand-sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner-overlay" id="spinner">
+    <div class="spinner-cda"></div>
+    <div class="spinner-text">Simulando el Mundial 2026<span class="spinner-dots"></span></div>
+  </div>
+
+  <div class="top-bar">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <img src="/images/logo-color.png" alt="CDA" class="cda-logo">
+        <span class="brand-divider"></span>
+        <span>Simulador Mundial 2026</span>
+        <span class="brand-sub">| CDA Soluciones Confiables</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="container">
+      <h1>Simulador Mundial <span class="highlight">2026</span></h1>
+      <p>Fase de Grupos a la Final &mdash; por CDA Soluciones Confiables</p>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="text-center mb-4">
+      <button class="btn btn-cda" id="btnSimular" onclick="simularMundial()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        Simular Mundial
+      </button>
+    </div>
+
+    <div id="teamsSection">
+      <h3 class="section-title">Equipos</h3>
+      <div id="teamsContainer" class="row g-3"></div>
+    </div>
+
+    <div id="resultsSection" style="display:none;">
+      <hr class="divider">
+      <h2 class="section-title">Resultados del Torneo</h2>
+      <div class="stats-bar" id="statsBar"></div>
+      <div id="groupsResult"></div>
+      <hr class="divider">
+      <div id="bracketResult"></div>
+      <div id="championResult"></div>
+      <hr class="divider">
+      <div id="dashboardResult"></div>
+    </div>
+  </div>
+
+  <div class="footer-cda">
+    <div class="container">
+      <img src="/images/logo-blanco.png" alt="CDA Soluciones Confiables" class="footer-logo">
+      <div class="footer-text">CDA Informática &mdash; Todos los derechos reservados</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API = "";
+
+    document.addEventListener("DOMContentLoaded", cargarEquipos);
+
+    async function cargarEquipos() {
+      try {
+        const res = await fetch(API + "/teams/");
+        const teams = await res.json();
+        const container = document.getElementById("teamsContainer");
+        if (teams.length === 0) {
+          container.innerHTML = '<div class="col-12"><div class="empty-state"><p>No hay equipos cargados. Presioná <strong>"Simular Mundial"</strong> para generarlos automáticamente.</p></div></div>';
+          return;
+        }
+        const groups = {};
+        teams.forEach(t => {
+          const g = t.group_name || "X";
+          if (!groups[g]) groups[g] = [];
+          groups[g].push(t);
+        });
+        container.innerHTML = "";
+        for (const [letter, gteams] of Object.entries(groups).sort()) {
+          const col = document.createElement("div");
+          col.className = "col-md-3 col-sm-6";
+          col.innerHTML = `
+            <div class="group-card">
+              <div class="group-header">Grupo ${letter}</div>
+              <table class="group-table">
+                <thead><tr><th></th><th>Equipo</th><th>Cod.</th></tr></thead>
+                <tbody>
+                  ${gteams.map((t, i) => `
+                    <tr class="${i < 2 ? 'qualified' : 'eliminated'}">
+                      <td><span class="position-badge ${i === 0 ? 'pos-1' : i === 1 ? 'pos-2' : 'pos-3'}">${i + 1}</span></td>
+                      <td><span class="team-name">${t.name}</span></td>
+                      <td>${t.code}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+          container.appendChild(col);
+        }
+      } catch (e) {
+        document.getElementById("teamsContainer").innerHTML =
+          '<div class="col-12"><div class="alert alert-danger">Error al cargar equipos: ' + e.message + '</div></div>';
+      }
+    }
+
+    async function simularMundial() {
+      const btn = document.getElementById("btnSimular");
+      const spinner = document.getElementById("spinner");
+      btn.disabled = true;
+      spinner.classList.add("active");
+
+      try {
+        const res = await fetch(API + "/simulator/run", { method: "POST" });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        mostrarResultados(data);
+        await cargarEquipos();
+        await mostrarDashboard();
+      } catch (e) {
+        alert("Error al simular: " + e.message);
+      } finally {
+        btn.disabled = false;
+        spinner.classList.remove("active");
+      }
+    }
+
+    function mostrarResultados(data) {
+      const section = document.getElementById("resultsSection");
+      section.style.display = "block";
+
+      const totalGoals = data.groups.reduce((sum, g) => {
+        return sum + g.matches.reduce((s, m) => s + m.home_goals + m.away_goals, 0);
+      }, 0);
+
+      document.getElementById("statsBar").innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value">${data.groups.length * 4}</div>
+          <div class="stat-label">Equipos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${totalGoals}</div>
+          <div class="stat-label">Goles Totales</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${data.groups[0].matches.length * 8}</div>
+          <div class="stat-label">Partidos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${data.champion}</div>
+          <div class="stat-label">Campeon</div>
+        </div>
+      `;
+
+      const groupsDiv = document.getElementById("groupsResult");
+      groupsDiv.innerHTML = '<h3 class="section-title">Fase de Grupos</h3><div class="row g-3" id="groupsGrid"></div>';
+      const grid = document.getElementById("groupsGrid");
+      data.groups.forEach(gr => {
+        const col = document.createElement("div");
+        col.className = "col-md-3 col-sm-6";
+        col.innerHTML = `
+          <div class="group-card">
+            <div class="group-header">Grupo ${gr.group}</div>
+            <table class="group-table">
+              <thead><tr><th>#</th><th>Equipo</th><th>Pts</th><th>GF</th><th>GA</th><th>DG</th></tr></thead>
+              <tbody>
+                ${gr.standings.map(s => `
+                  <tr class="${s.position <= 2 ? 'qualified' : 'eliminated'}">
+                    <td><span class="position-badge ${s.position === 1 ? 'pos-1' : s.position === 2 ? 'pos-2' : 'pos-3'}">${s.position}</span></td>
+                    <td><span class="team-name">${s.team}</span></td>
+                    <td><strong>${s.pts}</strong></td>
+                    <td>${s.gf}</td>
+                    <td>${s.ga}</td>
+                    <td>${s.gd >= 0 ? '+' : ''}${s.gd}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+        grid.appendChild(col);
+      });
+
+      const bracketDiv = document.getElementById("bracketResult");
+      bracketDiv.innerHTML = '';
+
+      const rounds = [
+        { key: "round_of_16", label: "Octavos de Final", cls: "round-of-16" },
+        { key: "quarterfinals", label: "Cuartos de Final", cls: "quarterfinals" },
+        { key: "semifinals", label: "Semifinales", cls: "semifinals" },
+      ];
+      rounds.forEach(r => {
+        const matches = data[r.key];
+        if (!matches || matches.length === 0) return;
+        const wrap = document.createElement("div");
+        wrap.className = "knockout-section";
+        const row = document.createElement("div");
+        row.className = "row";
+        matches.forEach(m => {
+          const col = document.createElement("div");
+          col.className = "col-12 mb-2";
+          col.innerHTML = `
+            <div class="match-card">
+              <div class="match-teams">
+                <div class="team ${m.winner === m.home_team ? '' : ''}">
+                  <span class="team-label">${m.home_team}</span>
+                  <span class="match-score">${m.home_goals}</span>
+                </div>
+                <div class="team ${m.winner === m.away_team ? '' : ''}">
+                  <span class="team-label">${m.away_team}</span>
+                  <span class="match-score">${m.away_goals}</span>
+                </div>
+              </div>
+            </div>
+          `;
+          row.appendChild(col);
+        });
+        wrap.appendChild(row);
+        bracketDiv.appendChild(wrap);
+      });
+
+      if (data.third_place) {
+        const tp = document.createElement("div");
+        tp.className = "knockout-section third-place";
+        tp.innerHTML = `<div class="round-header">Tercer Puesto</div>
+          <div class="row justify-content-center">
+            <div class="col-md-4">
+              <div class="match-card">
+                <div class="match-teams">
+                  <div class="team ${data.third_place.winner === data.third_place.home_team ? 'winner' : ''}">
+                    <span class="team-label">${data.third_place.home_team}</span>
+                    <span class="match-score">${data.third_place.home_goals}</span>
+                  </div>
+                  <div class="team ${data.third_place.winner === data.third_place.away_team ? 'winner' : ''}">
+                    <span class="team-label">${data.third_place.away_team}</span>
+                    <span class="match-score">${data.third_place.away_goals}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        bracketDiv.appendChild(tp);
+      }
+
+      const finalDiv = document.createElement("div");
+      finalDiv.className = "knockout-section final-round";
+      finalDiv.innerHTML = `<div class="round-header">Final</div>
+        <div class="row justify-content-center">
+          <div class="col-md-5">
+            <div class="match-card" style="border-color:var(--cda-border);border-width:2px;">
+              <div class="match-teams">
+                <div class="team ${data.final.winner === data.final.home_team ? 'winner' : ''}">
+                  <span class="team-label">${data.final.home_team}</span>
+                  <span class="match-score">${data.final.home_goals}</span>
+                </div>
+                <div class="team ${data.final.winner === data.final.away_team ? 'winner' : ''}">
+                  <span class="team-label">${data.final.away_team}</span>
+                  <span class="match-score">${data.final.away_goals}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      bracketDiv.appendChild(finalDiv);
+
+      document.getElementById("championResult").innerHTML =
+        `<div class="champion-banner">
+          <span class="trophy-icon">🏆</span>
+          <div class="champion-name">${data.champion}</div>
+          <div class="champion-sub">Campeon del Mundo 2026</div>
+        </div>`;
+
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+
+    async function mostrarDashboard() {
+      const container = document.getElementById("dashboardResult");
+      try {
+        const res = await fetch(API + "/metrics/dashboard");
+        if (!res.ok) {
+          container.innerHTML = "";
+          return;
+        }
+        const m = await res.json();
+        container.innerHTML = `
+          <h3 class="section-title">Dashboard Ejecutivo</h3>
+          <div class="dashboard-grid">
+            <div class="kpi-card accent-gold">
+              <div class="kpi-icon">🏆</div>
+              <div class="kpi-value">${m.champion}</div>
+              <div class="kpi-label">Campeon</div>
+            </div>
+            <div class="kpi-card accent-blue">
+              <div class="kpi-icon">⚽</div>
+              <div class="kpi-value">${m.top_scorer.player_name}</div>
+              <div class="kpi-label">Botin de Oro</div>
+              <div class="kpi-sub">${m.top_scorer.team_name} &middot; ${m.top_scorer.goals} goles</div>
+            </div>
+            <div class="kpi-card accent-green">
+              <div class="kpi-icon">📊</div>
+              <div class="kpi-value">${m.avg_goals_per_match}</div>
+              <div class="kpi-label">Prom. Goles/Partido</div>
+            </div>
+            <div class="kpi-card accent-secondary">
+              <div class="kpi-icon">🥅</div>
+              <div class="kpi-value">${m.total_goals}</div>
+              <div class="kpi-label">Goles Totales</div>
+              <div class="kpi-sub">en ${m.total_matches} partidos</div>
+            </div>
+          </div>
+        `;
+      } catch (e) {
+        container.innerHTML = "";
+      }
+    }
+  </script>
+</body>
+</html>

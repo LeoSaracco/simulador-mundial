@@ -1,0 +1,136 @@
+# CI/CD — Simulador Mundial 2026
+# Clase 7: IA para Developers | CDA + Alkemy
+#
+# Pipeline completo: lint → tests → quality-gate → simulate → deploy
+# El job 'simulate' corre el mundial con BD volátil y genera un sitio
+# estático que se publica en GitHub Pages — sin backend en producción.
+
+name: CI/CD — Simulador Mundial 2026
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Permisos necesarios para publicar en GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+
+  # ── JOB 1: LINT ────────────────────────────────────────────────────────
+  lint:
+    name: "① Lint — Ruff"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - name: Analizar código con Ruff
+        run: ruff check .
+
+  # ── JOB 2: TESTS + COVERAGE ────────────────────────────────────────────
+  tests:
+    name: "② Tests + Coverage"
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Correr tests con cobertura
+        env:
+          DATABASE_URL: sqlite:///:memory:
+        run: |
+          python -m pytest tests/ \
+            --cov=. \
+            --cov-report=xml \
+            --ignore=tests/test_frontend_smoke.py \
+            -q
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  # ── JOB 3: QUALITY GATE ────────────────────────────────────────────────
+  quality-gate:
+    name: "③ Quality Gate ≥ 80%"
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verificar cobertura >= 80%
+        run: |
+          COVERAGE=$(python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          cov = float(root.attrib['line-rate']) * 100
+          print(f'{cov:.1f}')
+          ")
+          echo "Cobertura actual: ${COVERAGE}%"
+          python -c "assert float('${COVERAGE}') >= 80, f'Quality Gate FAIL: cobertura {float(\"${COVERAGE}\"):.1f}% < 80%'"
+          echo "✅ Quality Gate OK: ${COVERAGE}% >= 80%"
+
+  # ── JOB 4: SIMULAR EL MUNDIAL ──────────────────────────────────────────
+  simulate:
+    name: "④ Simular el Mundial 2026"
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Simular el Mundial con BD en memoria → generar dist/
+        env:
+          DATABASE_URL: sqlite:///:memory:
+        run: python seed_and_simulate.py
+      - name: Validar que dist/index.html existe
+        run: |
+          test -f dist/index.html && echo "✅ dist/index.html generado" || exit 1
+          echo "Campeón del Mundial 2026:"
+          python -c "
+          import json
+          with open('dist/data/simulation.json') as f:
+            d = json.load(f)
+          print(f'  🏆 {d[\"champion\"]}')
+          "
+      - name: Subir dist/ como artifact de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  # ── JOB 5: DEPLOY A GITHUB PAGES (solo en main) ────────────────────────
+  deploy:
+    name: "⑤ Deploy → GitHub Pages"
+    needs: simulate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy a GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+# ── Prueba local (PowerShell) ──────────────────────────────────────────────
+# $env:DATABASE_URL="sqlite:///:memory:"; python seed_and_simulate.py
