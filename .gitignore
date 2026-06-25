@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+.coverage
+coverage.xml
+allure-results/
+*.egg-info/
+.venv/
+venv/
+node_modules/
+.env
